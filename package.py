@@ -1,7 +1,7 @@
 name = "studiolibrary"
 
 # NOTE: <external_version>.sse.<internal_version>
-version = "2.9.6.b1.sse.1.0.0"
+version = "2.9.6.b1.sse.1.1.0"
 
 authors = [
     "Kurt Rathjen"
@@ -30,6 +30,7 @@ with scope("config") as c:
 requires = [
     "maya",
     "sse_project",
+    "sse_storage_utils"
 ]
 
 private_build_requires = [
