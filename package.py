@@ -30,7 +30,6 @@ with scope("config") as c:
 requires = [
     "maya",
     "sse_project",
-    "sse_storage_utils"
 ]
 
 private_build_requires = [

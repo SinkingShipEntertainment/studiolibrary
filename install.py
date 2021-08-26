@@ -77,19 +77,14 @@ def sse_studio_library():
 
     import studiolibrary
 
-    local_path = am.get_animation_library_local_root(lib_type="studio_library")
-
-    # TODO: Change with Storage Utils
-    if not os.path.exists(local_path):
-        os.makedirs(local_path)
-
-
     # TODO: Make sure that the folder location is created if its not there
     shared_path = am.get_animation_library_shared_root()
 
+    # List of paths that users will have access to.
+    # These paths will be based on the project
+
     libraries = [
-    {"name":"Local", "path":local_path, "default":True, "theme":{"accentColor":"rgb(0,200,100)"}},
-    {"name":"Shared", "path":shared_path, "theme":{"accentColor":"rgb(128,128,0)"}},
+    {"name":"Shared", "path":shared_path, "default":True, "theme":{"accentColor":"rgb(128,128,0)"}},
     ]
 
     studiolibrary.setLibraries(libraries)
