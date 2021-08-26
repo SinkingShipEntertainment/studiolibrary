@@ -1,7 +1,7 @@
 name = "studiolibrary"
 
 # NOTE: <external_version>.sse.<internal_version>
-version = "2.9.6.b1.sse.1.1.0"
+version = "2.9.6.b1.sse.1.1.1"
 
 authors = [
     "Kurt Rathjen"
