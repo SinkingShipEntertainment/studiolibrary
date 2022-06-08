@@ -16,6 +16,7 @@ Drag and drop for Maya 2018+
 import os
 import sys
 
+
 try:
     import maya.mel
     import maya.cmds
@@ -23,72 +24,11 @@ try:
 except ImportError:
     isMaya = False
 
+
 def onMayaDroppedPythonFile(*args, **kwargs):
     """This function is only supported since Maya 2017 Update 3"""
     pass
 
-def remove_library_shelf_tool(parent_shelf):
-    '''
-    Removes the Duplicate Shelf Tool if there is
-    '''
-    all_shelf_buttons = maya.cmds.shelfLayout(parent_shelf, query=True, childArray=True)
-
-    labels = [maya.cmds.shelfButton(button_name, query=True, label=True) for button_name in all_shelf_buttons if 'separator' not in button_name]
-    library_count = labels.count('Studio Library')
-    #print("Libraries = %s" % library_count)
-
-    if library_count <= 1:
-        return
-
-    for button_name in all_shelf_buttons:
-        # --------------------------------------------------------
-        #Shelfs may have separators and these aren't buttons
-        #and will be an error asked to be one
-        # --------------------------------------------------------
-
-        if 'separator' not in button_name:
-            label = maya.cmds.shelfButton(button_name, query=True, label=True)
-            if label == 'Studio Library':
-                maya.cmds.deleteUI(button_name)
-                break
-
-
-def sse_studio_library():
-    # -----------------------------------
-    # Studio Library
-    # www.studiolibrary.com
-    #
-    # Sinking Ship Database Paths
-    # -----------------------------------
-
-    import os
-    import sys
-
-    # SSE Imports
-    from asset_manager.api import am
-
-    srcPath = os.path.join(os.path.dirname(__file__), 'src')
-
-    if not os.path.exists(srcPath):
-        raise IOError(r'The source path %s does not exist!' % srcPath)
-
-    if srcPath not in sys.path:
-        sys.path.insert(0, srcPath)
-
-    import studiolibrary
-
-    # TODO: Make sure that the folder location is created if its not there
-    shared_path = am.get_animation_library_shared_root()
-
-    # List of paths that users will have access to.
-    # These paths will be based on the project
-
-    libraries = [
-    {"name":"Shared", "path":shared_path, "default":True, "theme":{"accentColor":"rgb(128,128,0)"}},
-    ]
-
-    studiolibrary.setLibraries(libraries)
-    studiolibrary.main()
 
 def _onMayaDropped():
     """Dragging and dropping this file into the scene executes the file."""
@@ -106,20 +46,38 @@ def _onMayaDropped():
         if os.path.exists(path + '/studiolibrary/__init__.py'):
             maya.cmds.warning('Studio Library is already installed at ' + path)
 
+    command = '''
+# -----------------------------------
+# Studio Library
+# www.studiolibrary.com
+# -----------------------------------
+
+import os
+import sys
+    
+if not os.path.exists(r'{path}'):
+    raise IOError(r'The source path "{path}" does not exist!')
+    
+if r'{path}' not in sys.path:
+    sys.path.insert(0, r'{path}')
+    
+import studiolibrary
+studiolibrary.main()
+'''.format(path=srcPath)
+
     shelf = maya.mel.eval('$gShelfTopLevel=$gShelfTopLevel')
     parent = maya.cmds.tabLayout(shelf, query=True, selectTab=True)
-
     maya.cmds.shelfButton(
-        command=sse_studio_library,
+        command=command,
         annotation='Studio Library',
-        sourceType='python',
-        label="Studio Library",
+        sourceType='Python',
         image=iconPath,
         image1=iconPath,
         parent=parent
     )
 
-    remove_library_shelf_tool(parent)
+    # print("\n// Studio Library has been added to current shelf.")
+
 
 if isMaya:
     _onMayaDropped()
