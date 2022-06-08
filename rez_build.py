@@ -60,8 +60,8 @@ if __name__ == "__main__":
     source_dir = os.environ["REZ_BUILD_SOURCE_PATH"]
     dest_dir = os.environ["REZ_BUILD_INSTALL_PATH"]
 
-    dirs = ["src"]
-    files = ["install.gif", "install.mel", "install.py"]
+    dirs = ["src", "startup"]
+    files = []
 
     if os.environ["REZ_BUILD_TYPE"] == "local":
         # Clear the destination directory if it exists

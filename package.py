@@ -1,7 +1,7 @@
 name = "studiolibrary"
 
 # NOTE: <external_version>.sse.<internal_version>
-version = "2.9.6.b1.sse.1.1.1"
+version = "2.9.6.b1.sse.1.1.2"
 
 authors = [
     "Kurt Rathjen"
@@ -29,7 +29,7 @@ with scope("config") as c:
 
 requires = [
     "maya",
-    "sse_project",
+    #"sse_asset_manager",
 ]
 
 private_build_requires = [
@@ -50,4 +50,11 @@ def commands():
     env.REZ_STUDIOLIBRARY_ROOT = "{root}"
     env.PYTHONPATH.append("{root}/src")
 
-    env.STUDIO_LIBRARY_CONFIG_PATH = "{root}/config.json"
+    # TODO: Neil, this config.json doesn't exist anymore, but you can create
+    # a new one based on src/studiolibrary/config/default.json
+    # Look into config/readme.md for more details.
+    #env.STUDIO_LIBRARY_CONFIG_PATH = "{root}/config.json"
+
+    # For any MEL/Python scripts that we want to make available at startup
+    env.PYTHONPATH.append("{root}/startup")
+    env.MAYA_SCRIPT_PATH.append("{root}/startup")
