@@ -1,11 +1,11 @@
 # Copyright 2020 by Kurt Rathjen. All Rights Reserved.
 #
-# This library is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU Lesser General Public License as published by 
-# the Free Software Foundation, either version 3 of the License, or 
-# (at your option) any later version. This library is distributed in the 
-# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# This library is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. This library is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
@@ -57,7 +57,7 @@ class OutOfBoundsError(AnimationTransferError):
 def validateAnimLayers():
     """
     Check if the selected animation layer can be exported.
-    
+
     :raise: AnimationTransferError
     """
     if maya.cmds.about(q=True, batch=True):
@@ -98,12 +98,12 @@ def saveAnim(
     Example:
         import mutils
         mutils.saveAnim(
-            path="c:/example.anim", 
+            path="c:/example.anim",
             objects=["control1", "control2"]
             time=(1, 20),
             metadata={'description': 'Example anim'}
             )
-            
+
     :type path: str
     :type objects: None or list[str]
     :type time: (int, int) or None
@@ -113,7 +113,7 @@ def saveAnim(
     :type sequencePath: str
     :type metadata: dict or None
     :type bakeConnected: bool
-    
+
     :rtype: mutils.Animation
     """
     # Copy the icon path to the temp location
@@ -395,7 +395,7 @@ class Animation(mutils.Pose):
     def select(self, objects=None, namespaces=None, **kwargs):
         """
         Select the objects contained in the animation.
-        
+
         :type objects: list[str] or None
         :type namespaces: list[str] or None
         :rtype: None
@@ -595,7 +595,7 @@ class Animation(mutils.Pose):
         :type sampleBy: int
         :type fileType: str
         :type bakeConnected: bool
-        
+
         :rtype: None
         """
         objects = list(self.objects().keys())
@@ -642,7 +642,8 @@ class Animation(mutils.Pose):
 
             for name in objects:
                 if maya.cmds.copyKey(name, time=(start, end), includeUpperBound=False, option="keys"):
-                    dup_node = self._duplicate_node(name, "CURVE")
+                    dup_node_name = name + "_CURVE" # SSE
+                    dup_node = self._duplicate_node(name, dup_node_name) # SSE
                     # dup_node, = maya.cmds.duplicate(name, name="CURVE", parentOnly=True)
 
                     if not FIX_SAVE_ANIM_REFERENCE_LOCKED_ERROR:
@@ -659,7 +660,6 @@ class Animation(mutils.Pose):
                         dstCurve = dstAttr.animCurve()
 
                         if dstCurve:
-
                             dstCurve = maya.cmds.rename(dstCurve, "CURVE")
                             deleteObjects.append(dstCurve)
 
@@ -683,6 +683,7 @@ class Animation(mutils.Pose):
                                 maya.cmds.cutKey(dstCurve, time=(end + 1, MAX_TIME_LIMIT))
                                 validCurves.append(dstCurve)
 
+            fileType = "mayaAscii" # SSE
             fileName = "animation.ma"
             if fileType == "mayaBinary":
                 fileName = "animation.mb"
@@ -692,10 +693,12 @@ class Animation(mutils.Pose):
             mutils.Pose.save(self, posePath)
 
             if validCurves:
+                validCurves = list(set(validCurves))  # SSE: make unique
                 maya.cmds.select(validCurves)
                 logger.info("Saving animation: %s" % mayaPath)
                 maya.cmds.file(mayaPath, force=True, options='v=0', type=fileType, uiConfiguration=False, exportSelected=True)
-                self.cleanMayaFile(mayaPath)
+                if fileType == "mayaAscii": # SSE
+                    self.cleanMayaFile(mayaPath)
 
         finally:
             if bakeConnected:
@@ -811,6 +814,8 @@ class Animation(mutils.Pose):
                         continue
 
                     if srcCurve:
+                        print("srcNode:", srcNode)
+                        print("dstNode:", dstNode)
                         dstAttr.setAnimCurve(
                             srcCurve,
                             time=dstTime,

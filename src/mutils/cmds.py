@@ -1,11 +1,11 @@
 # Copyright 2020 by Kurt Rathjen. All Rights Reserved.
 #
-# This library is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU Lesser General Public License as published by 
-# the Free Software Foundation, either version 3 of the License, or 
-# (at your option) any later version. This library is distributed in the 
-# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# This library is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. This library is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
@@ -60,7 +60,7 @@ class ModelPanelNotInFocusError(MayaUtilsError):
 def system():
     """
     Return the current platform in lowercase.
-    
+
     :rtype: str
     """
     return platform.system().lower()
@@ -69,7 +69,7 @@ def system():
 def isMac():
     """
     Return True if the current OS is Mac.
-    
+
     :rtype: bool
     """
     return system().startswith("os") or \
@@ -78,9 +78,9 @@ def isMac():
 
 
 def isLinux():
-    """    
+    """
     Return True if the current OS is linux.
-    
+
     :rtype: bool
     """
     return system().lower().startswith("lin")
@@ -89,7 +89,7 @@ def isLinux():
 def isWindows():
     """
     Return True if the current OS is windows.
-    
+
     :rtype: bool
     """
     return system().lower().startswith("win")
@@ -98,7 +98,7 @@ def isWindows():
 def isMaya():
     """
     Return True if the current python session is in Maya.
-    
+
     :rtype: bool
     """
     try:
@@ -139,7 +139,7 @@ def ls(*args, **kwargs):
 def listAttr(name, **kwargs):
     """
     List all the attributes for the given object name.
-    
+
     :type name: str
     :type kwargs: str
     :rtype: list[mutils.Attribute]
@@ -152,7 +152,7 @@ def listAttr(name, **kwargs):
 def disconnectAll(name):
     """
     Disconnect all connections from the given object name.
-    
+
     :type name: str
     """
     plugins = maya.cmds.listConnections(name, plugs=True, source=False) or []
@@ -186,7 +186,7 @@ def deleteUnknownNodes():
 def currentModelPanel():
     """
     Get the current model panel name.
-    
+
     :rtype: str or None
     """
     currentPanel = maya.cmds.getPanel(withFocus=True)
@@ -233,7 +233,7 @@ def getBakeAttrs(objects):
 def bakeConnected(objects, time, sampleBy=1):
     """
     Bake the given objects.
-    
+
     :type objects: list[str]
     :type time: (int, int)
     :type sampleBy: int
@@ -261,8 +261,8 @@ def bakeConnected(objects, time, sampleBy=1):
 
 def getSelectedObjects():
     """
-    Get a list of the selected objects in Maya.    
-    
+    Get a list of the selected objects in Maya.
+
     :rtype: list[str]
     :raises: mutils.SelectionError:
     """
@@ -275,7 +275,7 @@ def getSelectedObjects():
 def getSelectedAttrs():
     """
     Get the attributes that are selected in the channel box.
-    
+
     :rtype: list[str]
     """
     attributes = maya.cmds.channelBox(
@@ -328,7 +328,7 @@ def playbackFrameRange():
 def selectedFrameRange():
     """
     Get the first and last frame from the play back slider.
- 
+
     :rtype: (int, int)
     """
     result = maya.mel.eval("timeControl -q -range $gPlayBackSlider")
@@ -342,7 +342,7 @@ def selectedFrameRange():
 def selectedObjectsFrameRange(objects=None):
     """
     Get the first and last animation frame from the given objects.
-    
+
     :type objects: list[str]
     :rtype: (int, int)
     """
@@ -362,7 +362,7 @@ def selectedObjectsFrameRange(objects=None):
 def getDurationFromNodes(objects):
     """
     Get the duration of the animation from the given object names.
-    
+
     :type objects: list[str]
     :rtype: float
     """

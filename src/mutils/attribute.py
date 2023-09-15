@@ -1,11 +1,11 @@
 # Copyright 2020 by Kurt Rathjen. All Rights Reserved.
 #
-# This library is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU Lesser General Public License as published by 
-# the Free Software Foundation, either version 3 of the License, or 
-# (at your option) any later version. This library is distributed in the 
-# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# This library is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. This library is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
@@ -59,6 +59,22 @@ VALID_ATTRIBUTE_TYPES = [
     "doubleAngle",
     "doubleLinear",
 ]
+
+
+##################################################
+from maya import OpenMaya as om
+
+def get_host_attr(node_attr):
+    sel = om.MSelectionList()
+    sel.add(node_attr)
+    mplug = om.MPlug()
+    sel.getPlug(0, mplug)
+    if mplug.isProxy():
+        hostMPlug = mplug.proxied()
+        attr_name = hostMPlug.partialName(False, False, False, False, False, True)
+        attr_node = om.MFnDependencyNode(hostMPlug.node()).uniqueName()
+        return "%s.%s" % (attr_node, attr_name)
+##################################################
 
 
 class AttributeError(Exception):
@@ -413,6 +429,8 @@ class Attribute(object):
         # We run the copy key command twice to check we have a valid curve.
         # It needs to run before the cutKey command, otherwise if it fails
         # we have cut keys for no reason!
+        print("curve:", curve)
+        print("source:", source)
         success = maya.cmds.copyKey(curve, time=source)
         if not success:
             msg = "Cannot copy keys from the anim curve {0}"
@@ -464,14 +482,19 @@ class Attribute(object):
 
         if self.exists():
 
-            n = self.listConnections(plugs=True, destination=False)
+            attr_fullpath = "%s.%s" % (self.name(), self.attr())
+            host_attr = get_host_attr(attr_fullpath)
+            if not host_attr:
+                n = self.listConnections(plugs=True, destination=False)
+            else:
+                n = maya.cmds.listConnections(host_attr, plugs=True, destination=False)
 
             if n and "animCurve" in maya.cmds.nodeType(n):
                 result = n
 
             elif n and "character" in maya.cmds.nodeType(n):
                 n = maya.cmds.listConnections(n, plugs=True,
-                                              destination=False)
+                                            destination=False)
                 if n and "animCurve" in maya.cmds.nodeType(n):
                     result = n
 
