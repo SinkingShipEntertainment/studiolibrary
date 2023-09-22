@@ -1,11 +1,11 @@
 # Copyright 2020 by Kurt Rathjen. All Rights Reserved.
 #
-# This library is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU Lesser General Public License as published by 
-# the Free Software Foundation, either version 3 of the License, or 
-# (at your option) any later version. This library is distributed in the 
-# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# This library is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. This library is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
@@ -81,8 +81,8 @@ def savePose(path, objects, metadata=None):
         pose = savePose(path, metadata={'description': 'Example pose'})
         print(pose.metadata())
         # {
-        'user': 'Hovel', 
-        'mayaVersion': '2016', 
+        'user': 'Hovel',
+        'mayaVersion': '2016',
         'description': 'Example pose'
         }
 
@@ -104,11 +104,11 @@ def savePose(path, objects, metadata=None):
 def loadPose(path, *args, **kwargs):
     """
     Convenience function for loading the given pose path.
-    
+
     :type path: str
     :type args: list
-    :type kwargs: dict 
-    :rtype: Pose 
+    :type kwargs: dict
+    :rtype: Pose
     """
     global _pose_
 
@@ -138,11 +138,11 @@ class Pose(mutils.TransferObject):
     def createObjectData(self, name):
         """
         Create the object data for the given object name.
-        
+
         :type name: str
         :rtype: dict
         """
-        attrs = maya.cmds.listAttr(name, unlocked=True, keyable=True) or []
+        attrs = mutils.list_attrs(name)
         attrs = list(set(attrs))
         attrs = [mutils.Attribute(name, attr) for attr in attrs]
 
@@ -164,7 +164,7 @@ class Pose(mutils.TransferObject):
     def select(self, objects=None, namespaces=None, **kwargs):
         """
         Select the objects contained in the pose file.
-        
+
         :type objects: list[str] or None
         :type namespaces: list[str] or None
         :rtype: None
@@ -175,7 +175,7 @@ class Pose(mutils.TransferObject):
     def cache(self):
         """
         Return the current cached attributes for the pose.
-        
+
         :rtype: list[(Attribute, Attribute)]
         """
         return self._cache
@@ -183,7 +183,7 @@ class Pose(mutils.TransferObject):
     def attrs(self, name):
         """
         Return the attribute for the given name.
-        
+
         :type name: str
         :rtype: dict
         """
@@ -202,7 +202,7 @@ class Pose(mutils.TransferObject):
     def attrType(self, name, attr):
         """
         Return the attribute type for the given name and attribute.
-        
+
         :type name: str
         :type attr: str
         :rtype: str
@@ -212,7 +212,7 @@ class Pose(mutils.TransferObject):
     def attrValue(self, name, attr):
         """
         Return the attribute value for the given name and attribute.
-        
+
         :type name: str
         :type attr: str
         :rtype: str | int | float
@@ -222,7 +222,7 @@ class Pose(mutils.TransferObject):
     def setMirrorAxis(self, name, mirrorAxis):
         """
         Set the mirror axis for the given name.
-        
+
         :type name: str
         :type mirrorAxis: list[int]
         """
@@ -237,7 +237,7 @@ class Pose(mutils.TransferObject):
     def mirrorAxis(self, name):
         """
         Return the mirror axis for the given name.
-        
+
         :rtype: list[int] | None
         """
         result = None
@@ -252,7 +252,7 @@ class Pose(mutils.TransferObject):
     def updateMirrorAxis(self, name, mirrorAxis):
         """
         Update the mirror axis for the given object name.
-        
+
         :type name: str
         :type mirrorAxis: list[int]
         """
@@ -261,7 +261,7 @@ class Pose(mutils.TransferObject):
     def mirrorTable(self):
         """
         Return the Mirror Table for the pose.
-        
+
         :rtype: mutils.MirrorTable
         """
         return self._mirrorTable
@@ -269,7 +269,7 @@ class Pose(mutils.TransferObject):
     def setMirrorTable(self, mirrorTable):
         """
         Set the Mirror Table for the pose.
-        
+
         :type mirrorTable: mutils.MirrorTable
         """
         objects = self.objects().keys()
@@ -281,7 +281,7 @@ class Pose(mutils.TransferObject):
     def mirrorValue(self, name, attr, mirrorAxis):
         """
         Return the mirror value for the given name, attribute and mirror axis.
-        
+
         :type name: str
         :type attr: str
         :type mirrorAxis: list[]
@@ -303,7 +303,7 @@ class Pose(mutils.TransferObject):
     def beforeLoad(self, clearSelection=True):
         """
         Called before loading the pose.
-        
+
         :type clearSelection: bool
         """
         logger.debug('Before Load "%s"', self.path())
@@ -359,7 +359,7 @@ class Pose(mutils.TransferObject):
     ):
         """
         Load the pose to the given objects or namespaces.
-        
+
         :type objects: list[str]
         :type namespaces: list[str]
         :type attrs: list[str]
@@ -422,8 +422,8 @@ class Pose(mutils.TransferObject):
     ):
         """
         Update the pose cache.
-        
-        :type objects: list[str] or None 
+
+        :type objects: list[str] or None
         :type namespaces: list[str] or None
         :type attrs: list[str] or None
         :type ignoreConnected: bool
@@ -502,10 +502,10 @@ class Pose(mutils.TransferObject):
     ):
         """
         Cache the given pair of nodes.
-        
+
         :type srcNode: mutils.Node
         :type dstNode: mutils.Node
-        :type attrs: list[str] or None 
+        :type attrs: list[str] or None
         :type ignoreConnected: bool or None
         :type onlyConnected: bool or None
         :type usingNamespaces: none or list[str]
@@ -568,7 +568,7 @@ class Pose(mutils.TransferObject):
     def loadCache(self, blend=100, key=False, mirror=False, additive=False):
         """
         Load the pose from the current cache.
-        
+
         :type blend: float
         :type key: bool
         :type mirror: bool

@@ -1,11 +1,11 @@
 # Copyright 2020 by Kurt Rathjen. All Rights Reserved.
 #
-# This library is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU Lesser General Public License as published by 
-# the Free Software Foundation, either version 3 of the License, or 
-# (at your option) any later version. This library is distributed in the 
-# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# This library is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. This library is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
@@ -22,10 +22,12 @@ from studiovendor import six
 
 try:
     import maya.cmds
+    import maya.OpenMaya
 except ImportError:
     import traceback
     traceback.print_exc()
 
+import mutils
 
 logger = logging.getLogger(__name__)
 
@@ -78,16 +80,34 @@ class Attribute(object):
 
         :rtype: list[Attribute]
         """
-        attrs = maya.cmds.listAttr(name, **kwargs) or []
+        attrs = mutils.list_attrs(name)
         return [cls(name, attr) for attr in attrs]
 
+    # @classmethod
+    # def deleteProxyAttrs(cls, name):
+    #     """Delete all the proxy attributes for the given object name."""
+    #     attrs = cls.listAttr(name, unlocked=True, keyable=True) or []
+    #     for attr in attrs:
+    #         if attr.isProxy():
+    #             attr.delete()
+
     @classmethod
-    def deleteProxyAttrs(cls, name):
-        """Delete all the proxy attributes for the given object name."""
+    def disconnectProxyAttrs(cls, name):
+        """Disconnects all proxy attributes for the given object name and removes their proxy properties."""
         attrs = cls.listAttr(name, unlocked=True, keyable=True) or []
         for attr in attrs:
             if attr.isProxy():
-                attr.delete()
+                conn = maya.cmds.listConnections(attr.fullname(), source=True, destination=False, plugs=True, connections=True)
+                if conn:
+                    maya.cmds.disconnectAttr(*list(reversed(conn)))
+
+                # Remove the proxy property of the attribute. This can only be done using openMaya api.
+                mplug = maya.OpenMaya.MPlug()
+                sel = maya.OpenMaya.MSelectionList()
+                sel.add(attr.fullname())
+                sel.getPlug(0, mplug)
+                mfnattr = maya.OpenMaya.MFnAttribute(mplug.attribute())
+                mfnattr.setProxyAttribute(False)
 
     def __init__(self, name, attr=None, value=None, type=None, cache=True):
         """
@@ -228,7 +248,8 @@ class Attribute(object):
 
         :rtype: list[str]
         """
-        return maya.cmds.listConnections(self.fullname(), **kwargs)
+        node_attr = mutils.get_host_attr(self.fullname()) or self.fullname()
+        return maya.cmds.listConnections(node_attr, **kwargs)
 
     def sourceConnection(self, **kwargs):
         """
@@ -262,9 +283,12 @@ class Attribute(object):
             try:
                 self._value = maya.cmds.getAttr(self.fullname())
             except Exception:
-                msg = 'Cannot GET attribute VALUE for "{0}"'
-                msg = msg.format(self.fullname())
-                logger.exception(msg)
+                try:
+                    self._value = get_value(self.fullname())
+                except Exception:
+                    msg = 'Cannot GET attribute VALUE for "{0}"'
+                    msg = msg.format(self.fullname())
+                    logger.exception(msg)
 
         return self._value
 
@@ -280,9 +304,13 @@ class Attribute(object):
                 self._type = maya.cmds.getAttr(self.fullname(), type=True)
                 self._type = six.text_type(self._type)
             except Exception:
-                msg = 'Cannot GET attribute TYPE for "{0}"'
-                msg = msg.format(self.fullname())
-                logger.exception(msg)
+                try:
+                    self._type = get_type(self.fullname())
+                    self._type = six.text_type(self._type)
+                except Exception:
+                    msg = 'Cannot GET attribute TYPE for "{0}"'
+                    msg = msg.format(self.fullname())
+                    logger.exception(msg)
 
         return self._type
 
@@ -421,9 +449,9 @@ class Attribute(object):
         fullname = self.fullname()
         startTime, endTime = time
 
-        if self.isProxy():
-            logger.debug("Cannot set anim curve for proxy attribute")
-            return
+        # if self.isProxy():
+        #     logger.debug("Cannot set anim curve for proxy attribute")
+        #     return
 
         if not self.exists():
             logger.debug("Attr does not exists")
@@ -551,9 +579,6 @@ class Attribute(object):
         if not self.exists():
             return False
 
-        if not maya.cmds.listAttr(self.fullname(), unlocked=True, keyable=True, multi=True, scalar=True):
-            return False
-
         connection = self.listConnections(destination=False)
         if connection:
             connectionType = maya.cmds.nodeType(connection)
@@ -563,3 +588,43 @@ class Attribute(object):
             return False
         else:
             return True
+
+
+def get_type(node_attr):
+
+    node, attr = node_attr.split(".")
+    type = maya.cmds.attributeQuery(attr, node=node, attributeType=True)
+    return type
+
+
+def get_value(node_attr):
+
+    sel = maya.OpenMaya.MSelectionList()
+    sel.add(node_attr)
+    mplug = maya.OpenMaya.MPlug()
+    sel.getPlug(0, mplug)
+    data_handle = mplug.asMDataHandle()
+    type = get_type(node_attr)
+
+    if type == "int":
+        attr_value = data_handle.asInt()
+    elif type == "long":
+        attr_value = data_handle.asDouble()
+    elif type == "enum":
+        attr_value = data_handle.asInt()
+    elif type == "bool":
+        attr_value = data_handle.asBool()
+    elif type == "string":
+        attr_value = data_handle.asString()
+    elif type == "float":
+        attr_value = data_handle.asFloat()
+    elif type == "short":
+        attr_value = data_handle.asShort()
+    elif type == "double":
+        attr_value = data_handle.asDouble()
+    elif type == "doubleAngle":
+        attr_value = data_handle.asDouble()
+    elif type == "doubleLinear":
+        attr_value = data_handle.asDouble()
+
+    return attr_value

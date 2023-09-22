@@ -1,11 +1,11 @@
 # Copyright 2020 by Kurt Rathjen. All Rights Reserved.
 #
-# This library is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU Lesser General Public License as published by 
-# the Free Software Foundation, either version 3 of the License, or 
-# (at your option) any later version. This library is distributed in the 
-# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# This library is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version. This library is distributed in the
+# hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU Lesser General Public License for more details.
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
@@ -113,13 +113,13 @@ class KeysOption:
 def saveMirrorTable(path, objects, metadata=None, *args, **kwargs):
     """
     Convenience function for saving a mirror table to the given disc location.
-    
+
     :type path: str
     :type objects: list[str]
     :type metadata: dict or None
     :type args: list
     :type kwargs: dict
-    :rtype: MirrorTable 
+    :rtype: MirrorTable
     """
     mirrorTable = MirrorTable.fromObjects(objects, *args, **kwargs)
 
@@ -147,12 +147,12 @@ class MirrorTable(mutils.TransferObject):
     ):
         """
         Create a new Mirror Table instance from the given Maya object/controls.
-        
+
         :type objects: list[str]
         :type leftSide: str
         :type rightSide: str
         :type mirrorPlane: mirrortable.MirrorPlane or str
-        
+
         :rtype: MirrorTable
         """
         mirrorPlane = mirrorPlane or MirrorPlane.YZ
@@ -188,7 +188,7 @@ class MirrorTable(mutils.TransferObject):
     def findLeftSide(objects):
         """
         Return the left side naming convention for the given objects
-        
+
         :type objects: list[str]
         :rtype: str
         """
@@ -198,7 +198,7 @@ class MirrorTable(mutils.TransferObject):
     def findRightSide(objects):
         """
         Return the right side naming convention for the given objects
-        
+
         :type objects: list[str]
         :rtype: str
         """
@@ -208,7 +208,7 @@ class MirrorTable(mutils.TransferObject):
     def findSide(cls, objects, reSides):
         """
         Return the naming convention for the given object names.
-        
+
         :type objects: list[str]
         :type reSides: str or list[str]
         :rtype: str
@@ -599,7 +599,7 @@ class MirrorTable(mutils.TransferObject):
     def select(self, objects=None, namespaces=None, **kwargs):
         """
         Select the objects contained in file.
-        
+
         :type objects: list[str] or None
         :type namespaces: list[str] or None
         :rtype: None
@@ -797,7 +797,7 @@ class MirrorTable(mutils.TransferObject):
         dstValid = self.isValidMirror(dstObj, option)
 
         if attrs is None:
-            attrs = maya.cmds.listAttr(srcObj, keyable=True) or []
+            attrs = mutils.list_attrs(srcObj)
 
         for attr in attrs:
             dstAttr = dstObj + "." + attr
@@ -869,7 +869,7 @@ class MirrorTable(mutils.TransferObject):
                 maya.cmds.pasteKey(dstObj, time=time, option="replace")
 
         if attrs is None:
-            attrs = maya.cmds.listAttr(srcObj, keyable=True) or []
+            attrs = mutils.list_attrs(srcObj)
 
         for attr in attrs:
             srcAttribute = mutils.Attribute(srcObj, attr)
