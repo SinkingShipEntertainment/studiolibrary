@@ -248,7 +248,7 @@ class Attribute(object):
 
         :rtype: list[str]
         """
-        node_attr = mutils.get_host_attr(self.fullname()) or self.fullname()
+        node_attr = mutils.get_proxy_attr_target(self.fullname()) or self.fullname()
         return maya.cmds.listConnections(node_attr, **kwargs)
 
     def sourceConnection(self, **kwargs):

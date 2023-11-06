@@ -785,6 +785,8 @@ class Animation(mutils.Pose):
             maya.cmds.flushUndo()
             maya.cmds.undoInfo(openChunk=True)
 
+            proxy_attrs_set = set([])
+
             if currentTime and startFrame is None:
                 startFrame = int(maya.cmds.currentTime(query=True))
 
@@ -810,6 +812,18 @@ class Animation(mutils.Pose):
                     if not dstAttr.exists():
                         logger.debug('Skipping attribute: The destination attribute "%s" does not exist!' % dstAttr.fullname())
                         continue
+
+                    # Ensure that dst proxy attributes are only modified once. There may be potentially many
+                    # src attributes that all want to modify the same dst attribute. This is fine in a scenario
+                    # where curves are being replaced, but is problematic when inserting animation. Therefore
+                    # only modify targets of proxy attrs once.
+                    proxy_attr_target = mutils.get_proxy_attr_target(dstAttr.fullname())
+                    is_proxy_attr_target = mutils.is_target_of_proxy_attr(dstAttr.fullname())
+                    if proxy_attr_target or is_proxy_attr_target:
+                        resolved_target = proxy_attr_target or dstAttr.fullname()
+                        if resolved_target in proxy_attrs_set:
+                            continue
+                        proxy_attrs_set.add(resolved_target)
 
                     srcCurve = self.animCurve(srcNode.name(), attr, withNamespace=True)
 

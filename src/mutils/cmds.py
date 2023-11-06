@@ -225,7 +225,7 @@ def getBakeAttrs(objects):
         nodeType = maya.cmds.nodeType(srcObj)
 
         if "animCurve" not in nodeType:
-            if get_host_attr(dstObj):
+            if get_proxy_attr_target(dstObj):
                 continue
             result.append(dstObj)
 
@@ -299,7 +299,10 @@ def getSelectedAttrs():
     return attributes
 
 
-def get_host_attr(node_attr):
+def get_proxy_attr_target(node_attr):
+    """ Gets the target of the input attribute if it is a proxy attribute, None otherwise.
+    """
+
     sel = om.MSelectionList()
     sel.add(node_attr)
     mplug = om.MPlug()
@@ -307,8 +310,26 @@ def get_host_attr(node_attr):
     if mplug.isProxy():
         hostMPlug = mplug.proxied()
         attr_name = hostMPlug.partialName(False, False, False, False, False, True)
-        attr_node = om.MFnDependencyNode(hostMPlug.node()).uniqueName()
+        # attr_node = om.MFnDependencyNode(hostMPlug.node()).uniqueName()
+        attr_node = om.MFnDependencyNode(hostMPlug.node()).name()
         return "%s.%s" % (attr_node, attr_name)
+
+
+def is_target_of_proxy_attr(node_attr):
+    """ Queries whether the input attribute is the target of another proxy attribute
+    """
+
+    mplug = maya.OpenMaya.MPlug()
+    sel = maya.OpenMaya.MSelectionList()
+    sel.add(node_attr)
+    sel.getPlug(0, mplug)
+
+    destination_plugs = om.MPlugArray()
+    mplug.destinations(destination_plugs)
+    for index in range(destination_plugs.length()):
+        dst_plug = destination_plugs[index]
+        if dst_plug.isProxy():
+            return True
 
 
 def list_attrs(ctrl, attr_filter=None):
