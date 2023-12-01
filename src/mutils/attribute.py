@@ -99,6 +99,7 @@ class Attribute(object):
             if attr.isProxy():
                 conn = maya.cmds.listConnections(attr.fullname(), source=True, destination=False, plugs=True, connections=True)
                 if conn:
+                    maya.cmds.setAttr(attr.fullname(), lock=False)
                     maya.cmds.disconnectAttr(*list(reversed(conn)))
 
                 # Remove the proxy property of the attribute. This can only be done using openMaya api.
