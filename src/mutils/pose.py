@@ -551,8 +551,10 @@ class Pose(mutils.TransferObject):
                 continue
 
             dstAttribute = mutils.Attribute(dstNode.name(), attr)
-            isConnected = dstAttribute.isConnected()
+            if not dstAttribute.exists():
+                continue
 
+            isConnected = dstAttribute.isConnected()
             if (ignoreConnected and isConnected) or (onlyConnected and not isConnected):
                 continue
 
